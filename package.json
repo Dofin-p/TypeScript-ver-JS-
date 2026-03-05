@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:gh": "tsc && vite build --mode gh-pages",
+    "preview:gh": "vite preview --mode gh-pages"
   },
   "devDependencies": {
     "typescript": "~5.9.3",
