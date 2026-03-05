@@ -1,4 +1,5 @@
 # JS → TypeScript リファクタリング実践プロジェクト
+URL: https://dofin-p.github.io/TypeScript-ver-JS-/
 
 [元のJavaScriptリポジトリ](https://github.com/Dofin-p/Javascript-)のコードをTypeScriptへ完全移行したリファクタリングプロジェクトです。
 単純な型付けにとどまらず、**アーキテクチャの再設計**を伴う移行を実施しました。
@@ -59,3 +60,57 @@ Viteのプロジェクト構造に合わせてHTMLとCSSを移植し、`style.cs
 
 - API通信中のボタン非活性化（二重リクエスト防止）を実装し、UXに配慮
 - 命令的な `for` ループから宣言的な `forEach` への書き換えによるコードの簡潔化
+
+
+---
+
+## デプロイ環境構築（GitHub Pages）
+
+公開URL: https://dofin-p.github.io/TypeScript-ver-JS-/
+
+### 構成
+
+- **ビルドツール**: Vite
+- **デプロイ先**: GitHub Pages（GitHub Actions 経由で自動デプロイ）
+
+### 工夫・苦戦した点
+
+#### `base` パスの設定
+
+GitHub Pages はサブディレクトリ（`/TypeScript-ver-JS-/`）配信になるため、`vite.config.ts` に `base` オプションを明示的に設定する必要があった。
+
+```ts
+// vite.config.ts
+export default defineConfig({
+  base: "/TypeScript-ver-JS-/",
+});
+```
+
+設定しないと、ビルド後の `dist/index.html` が `/assets/...` という絶対パスでアセットを参照してしまい、GitHub Pages 上で JS・CSS が 404 になる。
+
+#### `index.html` の相対パス指定
+
+`<script src="/src/main.ts">` のような **ルート絶対パス** は GitHub Pages のサブディレクトリ配信で壊れる。
+開発時は `./src/main.ts` に統一し、Vite がビルド時に自動で `base` を付与する流れにした。
+
+#### GitHub Actions による自動デプロイ
+
+`.github/workflows/deploy.yml` を作成し、`main` ブランチへの push をトリガーに以下の流れで自動公開。
+
+```
+push to main
+  → npm ci
+  → npm run build（tsc + vite build）
+  → actions/upload-pages-artifact（dist/を転送）
+  → actions/deploy-pages（GitHub Pages へ公開）
+```
+
+GitHub リポジトリの `Settings > Pages > Source` で **GitHub Actions** を選択しておく必要がある。
+
+#### ローカルでの本番確認方法
+
+```bash
+npm run build    # dist/ を生成
+npm run preview  # http://localhost:4173/TypeScript-ver-JS-/ で確認
+```
+
